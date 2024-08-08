@@ -12,3 +12,91 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id           String        @id @default(uuid())
+  username     String        @unique @db.VarChar(255)
+  emailAddress String        @unique @db.VarChar(255)
+  enabled      Boolean       @default(false)
+  profile      String        @db.VarChar(255)
+  status       String        @db.VarChar(55)
+  isOnline     Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime?     @updatedAt
+  deletedAt    DateTime?
+  Passwords    Password[]
+  Groups       Group[]
+  GroupMembers GroupMember[]
+  Senders      Message[]     @relation("sender")
+  Receivers    Message[]     @relation("receiver")
+  Logs         Log[]
+}
+
+model Password {
+  id             String    @id @default(uuid())
+  userId         String
+  hashedPassword String
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime? @updatedAt
+
+  User User @relation(fields: [userId], references: [id])
+}
+
+model Group {
+  id          String    @id @default(uuid())
+  name        String    @unique @db.VarChar(255)
+  description String    @db.VarChar(255)
+  profile     String    @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  User        User?     @relation(fields: [userId], references: [id])
+  userId      String?
+}
+
+model GroupMember {
+  id        String    @id @default(uuid())
+  userId    String
+  groupId   String
+  role      Role      @default(Member)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  User      User      @relation(fields: [userId], references: [id])
+}
+
+model Message {
+  id             String       @id @default(uuid())
+  senderId       String
+  receiverId     String
+  groupId        String?
+  content        String       @db.VarChar(255)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime?    @updatedAt
+  Sender         User?        @relation(fields: [senderId], references: [id], name: "sender")
+  Receiver       User?        @relation(fields: [receiverId], references: [id], name: "receiver")
+  Attachments    Attachment[]
+}
+
+model Attachment {
+  id            String    @id @default(uuid())
+  messageId     String
+  attachmentUrl String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime? @updatedAt
+  Message       Message   @relation(fields: [messageId], references: [id])
+}
+
+model Log {
+  id        String    @id @default(uuid())
+  userId    String
+  message   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  User User @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  Owner
+  Member
+}
