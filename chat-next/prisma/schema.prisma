@@ -14,22 +14,23 @@ datasource db {
 }
 
 model User {
-  id           String        @id @default(uuid())
-  username     String        @unique @db.VarChar(255)
-  emailAddress String        @unique @db.VarChar(255)
-  enabled      Boolean       @default(false)
-  profile      String        @db.VarChar(255)
-  status       String        @db.VarChar(55)
-  isOnline     Boolean       @default(false)
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime?     @updatedAt
-  deletedAt    DateTime?
-  Passwords    Password[]
-  Groups       Group[]
-  GroupMembers GroupMember[]
-  Senders      Message[]     @relation("sender")
-  Receivers    Message[]     @relation("receiver")
-  Logs         Log[]
+  id            String         @id @default(uuid())
+  username      String         @unique @db.VarChar(255)
+  emailAddress  String         @unique @db.VarChar(255)
+  enabled       Boolean        @default(false)
+  profile       String         @db.VarChar(255)
+  status        String         @db.VarChar(55)
+  isOnline      Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime?      @updatedAt
+  deletedAt     DateTime?
+  Passwords     Password[]
+  Groups        Group[]
+  GroupMembers  GroupMember[]
+  Senders       Message[]      @relation("sender")
+  Receivers     Message[]      @relation("receiver")
+  Logs          Log[]
+  Verifications Verification[]
 }
 
 model Password {
@@ -65,16 +66,16 @@ model GroupMember {
 }
 
 model Message {
-  id             String       @id @default(uuid())
-  senderId       String
-  receiverId     String
-  groupId        String?
-  content        String       @db.VarChar(255)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime?    @updatedAt
-  Sender         User?        @relation(fields: [senderId], references: [id], name: "sender")
-  Receiver       User?        @relation(fields: [receiverId], references: [id], name: "receiver")
-  Attachments    Attachment[]
+  id          String       @id @default(uuid())
+  senderId    String
+  receiverId  String
+  groupId     String?
+  content     String       @db.VarChar(255)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime?    @updatedAt
+  Sender      User?        @relation(fields: [senderId], references: [id], name: "sender")
+  Receiver    User?        @relation(fields: [receiverId], references: [id], name: "receiver")
+  Attachments Attachment[]
 }
 
 model Attachment {
@@ -84,6 +85,17 @@ model Attachment {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime? @updatedAt
   Message       Message   @relation(fields: [messageId], references: [id])
+}
+
+model Verification {
+  id        String           @id @default(uuid())
+  userId    String
+  token     String
+  type      VerificationType
+  createdAt DateTime         @default(now())
+  updatedAt DateTime?        @updatedAt
+
+  User User @relation(fields: [userId], references: [id])
 }
 
 model Log {
@@ -99,4 +111,8 @@ model Log {
 enum Role {
   Owner
   Member
+}
+
+enum VerificationType {
+  ForgotPassword
 }
